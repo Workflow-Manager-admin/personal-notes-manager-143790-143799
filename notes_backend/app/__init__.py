@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
-from .routes.health import blp
+from .routes.health import blp as health_blp
+from .routes.notes import blp as notes_blp
 from flask_smorest import Api
-
+from .models import close_db
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -14,6 +15,11 @@ app.config['OPENAPI_URL_PREFIX'] = '/docs'
 app.config["OPENAPI_SWAGGER_UI_PATH"] = ""
 app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
 
-
 api = Api(app)
-api.register_blueprint(blp)
+api.register_blueprint(health_blp)
+api.register_blueprint(notes_blp)
+
+# Ensure DB connections are closed at request end
+@app.teardown_appcontext
+def teardown_db(exception):
+    close_db(exception)
